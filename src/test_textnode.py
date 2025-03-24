@@ -37,6 +37,7 @@ class TestTextNode(unittest.TestCase):
         node = TextNode("This is bold text", FakeType.BAD)
         with self.assertRaises(ValueError):
             text_node_to_html_node(node)
+
     def test_text_bold(self):
         node = TextNode("this is bold text", TextType.BOLD)
         html_node = text_node_to_html_node(node)
@@ -44,7 +45,23 @@ class TestTextNode(unittest.TestCase):
         self.assertEqual(html_node.value, "this is bold text")
         output_html = html_node.to_html()
         self.assertEqual(output_html, "<b>this is bold text</b>")
-        
+
+    def test_text_link(self):
+        node = TextNode("click here", TextType.LINK, "www.google.com")
+        html_node = text_node_to_html_node(node)
+        to_html = html_node.to_html()
+        self.assertEqual(html_node.tag, "a")
+        self.assertEqual(html_node.value, "click here")
+        self.assertEqual(html_node.props["href"], "www.google.com")
+        self.assertEqual(to_html, '<a href="www.google.com">click here</a>')
+
+    def test_text_image(self):
+        node = TextNode("alt text", TextType.IMAGE, "/path/to/image")
+        html_node = text_node_to_html_node(node)
+        to_html = html_node.to_html()
+        self.assertEqual(html_node.value, "")
+        self.assertEqual(html_node.tag, "img")
+        self.assertEqual(to_html, '<img src="/path/to/image" alt="alt text"></img>')
     
 if __name__ == "__main__":
     unittest.main()
