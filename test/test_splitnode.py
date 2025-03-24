@@ -1,7 +1,7 @@
 import unittest
 
 from src.htmlnode import ParentNode, LeafNode
-from src.splitnode import split_nodes_delimiter, split_nodes_image, split_nodes_link
+from src.splitnode import split_nodes_delimiter, split_nodes_image, split_nodes_link, text_to_textnodes
 from src.textnode import TextNode, TextType
 
 class TestHtmlNode(unittest.TestCase):
@@ -49,4 +49,26 @@ class TestHtmlNode(unittest.TestCase):
         node = TextNode("This is [text](with no links at all", TextType.TEXT)
         split_nodes = split_nodes_link([node])
         self.assertEqual([TextNode("This is [text](with no links at all", TextType.TEXT)],
+                         split_nodes)
+        
+    def test_text_to_textnodes(self):
+        text = "This is **text** with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+        split_nodes = text_to_textnodes(text)
+        self.assertEqual([
+        TextNode("This is ", TextType.TEXT),
+        TextNode("text", TextType.BOLD),
+        TextNode(" with an ", TextType.TEXT),
+        TextNode("italic", TextType.ITALIC),
+        TextNode(" word and a ", TextType.TEXT),
+        TextNode("code block", TextType.CODE),
+        TextNode(" and an ", TextType.TEXT),
+        TextNode("obi wan image", TextType.IMAGE, "https://i.imgur.com/fJRm4Vk.jpeg"),
+        TextNode(" and a ", TextType.TEXT),
+        TextNode("link", TextType.LINK, "https://boot.dev"),
+        ], split_nodes)
+    
+    def test_text_to_textnodes_none(self):
+        text = "This is plain text with no markdown"
+        split_nodes = text_to_textnodes(text)
+        self.assertEqual([TextNode("This is plain text with no markdown", TextType.TEXT)],
                          split_nodes)
