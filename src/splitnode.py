@@ -38,6 +38,27 @@ def split_nodes_image(old_nodes):
 
             if text:   #if anything left, append it
                 new_nodes.append(TextNode(text, TextType.TEXT))
+    
+    return new_nodes
 
-
+def split_nodes_link(old_nodes):
+    new_nodes = []
+    for node in old_nodes:
+        if node.text_type != TextType.TEXT:
+            new_nodes.append(node)
+        else:
+            links = extract_markdown_links(node.text)
+            if len(links) == 0:
+                new_nodes.append(node)
+                continue
+            node_text = node.text
+            for text, url in links:
+                markdown = f"[{text}]({url})"
+                before, after = node_text.split(markdown, 1)
+                if before:
+                    new_nodes.append(TextNode(before, TextType.TEXT))
+                new_nodes.append(TextNode(text, TextType.LINK, url))
+                node_text = after
+            if node_text:
+                new_nodes.append(TextNode(node_text, TextType.TEXT))
     return new_nodes
