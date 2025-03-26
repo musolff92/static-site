@@ -1,8 +1,8 @@
 import re
 from enum import Enum
-from src.textnode import LeafNode, text_node_to_html_node
-from src.splitnode import text_to_textnodes
-from src.htmlnode import ParentNode
+from textnode import LeafNode, text_node_to_html_node
+from splitnode import text_to_textnodes
+from htmlnode import ParentNode
 
 class BlockType(Enum):
     PARAGRAPH = "paragraph"
@@ -70,7 +70,7 @@ def markdown_to_html_node(markdown):
             block_nodes.append(ParentNode("blockquote", children))
         elif block_type == BlockType.UNORDERED_LIST:
             list_items = []
-            for line in block.strip("\n"):
+            for line in block.split("\n"):
                 content = line.lstrip("- ").strip()
                 children = text_to_children(content)
                 list_items.append(ParentNode("li", children))
