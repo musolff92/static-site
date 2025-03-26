@@ -1,5 +1,6 @@
 import os
 import shutil
+import sys
 from block_parser import markdown_to_html_node
 #from textnode import TextNode
 
@@ -24,7 +25,7 @@ def extract_title(markdown):
             return line.lstrip("# ").strip()
     raise Exception("No h1 header found")
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, base_path="/"):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
 
     with open(from_path, "r") as f:
@@ -40,34 +41,42 @@ def generate_page(from_path, template_path, dest_path):
 
     full_html = template.replace("{{ Title }}", title).replace("{{ Content }}", html_content)
 
+    full_html = full_html.replace('href="/', f'href="{base_path}')
+    full_html = full_html.replace('src="/', f'src="{base_path}')
+
     os.makedirs(os.path.dirname(dest_path), exist_ok=True)
 
     with open(dest_path, "w") as f:
         f.write(full_html)
 
 ######################################
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, base_path):
 
     for item in os.listdir(dir_path_content):
         content_item_path = os.path.join(dir_path_content, item)
         dest_item_path = os.path.join(dest_dir_path, item)
 
         if os.path.isdir(content_item_path):
-            generate_pages_recursive(content_item_path, template_path, dest_item_path)
+            generate_pages_recursive(content_item_path, template_path, dest_item_path, base_path)
         elif os.path.isfile(content_item_path) and item.endswith(".md"):
             dest_item_path = os.path.splitext(dest_item_path)[0] + ".html"
 
             os.makedirs(os.path.dirname(dest_item_path), exist_ok=True)
 
-            generate_page(content_item_path, template_path, dest_item_path)
+            generate_page(content_item_path, template_path, dest_item_path, base_path)
 
 
 
 
 def main():
-    copy_static("static", "public")
+    base_path = sys.argv[1] if len(sys.argv) > 1 else "/"
 
-    generate_pages_recursive("content", "template.html", "public")
+    output_dir = "docs"
+    
+    copy_static("static", output_dir)
+
+    generate_pages_recursive("content", "template.html", output_dir, base_path)
 
     
-main()
+if __name__ == "__main__":
+    main()
